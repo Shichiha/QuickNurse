@@ -1,0 +1,1 @@
+Basically adds a configurable hotkey to quickly heal through the nurse

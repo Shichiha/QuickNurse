@@ -1,0 +1,3 @@
+displayName = Nurse Heal Hotkey
+author = Shichiha
+version = 0.1
