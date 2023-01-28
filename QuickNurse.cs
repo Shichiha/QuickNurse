@@ -10,13 +10,12 @@ namespace QuickNurse
 {
 	public class QuickNurse : Mod
 	{
-		// i love magic numbers
-		public static List<int> dontClearIndexes = new List<int> { 28, 34, 87, 89, 21, 86, 199 };
-
-		internal static ModKeybind ToggleQuickNurse;
+		internal static ModKeybind QuickNurseHotkey;
+		internal static ModKeybind GetPriceHotkey;
 		public override void Load()
 		{
-			ToggleQuickNurse = KeybindLoader.RegisterKeybind(this, "Nurse Heal", "Home");
+			QuickNurseHotkey = KeybindLoader.RegisterKeybind(this, "Nurse Heal", "Home");
+			GetPriceHotkey = KeybindLoader.RegisterKeybind(this, "Get Price", "End");
 		}
 	}
 
@@ -39,8 +38,8 @@ namespace QuickNurse
 			player.statLife = player.statLifeMax2;
 			for (int b = 0; b < Player.MaxBuffs; ++b)
 			{
-				int index = player.buffType[b];
-				if (Main.debuff[index] && player.buffTime[b] > 0 && !QuickNurse.dontClearIndexes.Contains(index))
+				int buffIndex = player.buffType[b];
+				if (Main.debuff[buffIndex] && player.buffTime[b] > 0 && !BuffID.Sets.NurseCannotRemoveDebuff[buffIndex])
 				{
 					player.DelBuff(b);
 					b = -1;
@@ -48,10 +47,32 @@ namespace QuickNurse
 			}
 		}
 
+		private int GetPrice()
+		{
+			Player myPlayer = Main.player[Main.myPlayer];
+			int price = myPlayer.statLifeMax2 - myPlayer.statLife;
+			for (int i = 0; i < Player.MaxBuffs; ++i)
+			{
+				int buffIndex = myPlayer.buffType[i];
+				if (Main.debuff[buffIndex] && myPlayer.buffTime[i] > 60 && !BuffID.Sets.NurseCannotRemoveDebuff[buffIndex])
+					price += 100;
+			}
+			if (NPC.downedGolemBoss) price *= 200;
+			else if (NPC.downedPlantBoss) price *= 150;
+			else if (NPC.downedMechBossAny) price *= 100;
+			else if (Main.hardMode) price *= 60;
+			else if (NPC.downedBoss3 || NPC.downedQueenBee) price *= 25;
+			else if (NPC.downedBoss2) price *= 10;
+			else if (NPC.downedBoss1) price *= 3;
+			if (Main.expertMode) price *= 2;
+			int priceScaled = (int)((double)price * myPlayer.currentShoppingSettings.PriceAdjustment);
+			return priceScaled;
+		}
+
 		private void NurseHeal(Player player)
 		{
 			bool needsHealing = PlayerNeedsHealing(player);
-			bool enoughMoney = player.BuyItem(NPCID.Nurse, -1);
+			bool enoughMoney = player.BuyItem(GetPrice());
 			bool nurseNearby = IsNurseNearby();
 			if (nurseNearby && enoughMoney && needsHealing)
 				HealPlayer(player);
@@ -69,13 +90,18 @@ namespace QuickNurse
 
 		public override void ProcessTriggers(TriggersSet triggersSet)
 		{
-			if (QuickNurse.ToggleQuickNurse.JustPressed)
+			if (QuickNurse.QuickNurseHotkey.JustPressed)
 				NurseHeal(Main.player[Main.myPlayer]);
+			if (QuickNurse.GetPriceHotkey.JustPressed)
+			{
+				Main.NewText("Price: " + GetPrice(), 255, 255, 255);
+			}
 		}
 	}
 
 	internal static class Hotkeys
 	{
-		public static string ToggleQuickNurse { get; set; }
+		public static string QuickNurseHotkey { get; set; }
+		public static string GetPriceHotkey { get; set; }
 	}
 }
