@@ -27,9 +27,10 @@ namespace QuickNurse
 		private bool IsNurseNearby()
 		{
 			Vector2 playerPos = Main.player[Main.myPlayer].position;
-			int nurse = NPC.FindFirstNPC(NPCID.Nurse);
-			NPC nurseNPC = Main.npc[nurse];
-			return nurse > 0 && nurseNPC.Distance(playerPos) < QuickNurse.num9;
+			foreach (NPC npc in Main.npc)
+				if (npc.type == NPCID.Nurse && npc.Distance(playerPos) < QuickNurse.num9)
+					return true;
+			return false;
 		}
 
 		private void HealPlayer(Player player)
