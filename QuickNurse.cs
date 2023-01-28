@@ -13,15 +13,12 @@ namespace QuickNurse
 		// i love magic numbers
 		public static List<int> dontClearIndexes = new List<int> { 28, 34, 87, 89, 21, 86, 199 };
 		public static double num9 = 100;
-		static public bool AutoHeal = false;
 
 
 		internal static ModKeybind ToggleQuickNurse;
-		internal static ModKeybind ToggleAutoHeal;
 		public override void Load()
 		{
 			ToggleQuickNurse = KeybindLoader.RegisterKeybind(this, "Nurse Heal", "Home");
-			ToggleAutoHeal = KeybindLoader.RegisterKeybind(this, "Toggle Auto Heal", "End");
 		}
 	}
 
@@ -75,21 +72,11 @@ namespace QuickNurse
 		{
 			if (QuickNurse.ToggleQuickNurse.JustPressed)
 				NurseHeal(Main.player[Main.myPlayer]);
-			if (QuickNurse.ToggleAutoHeal.JustPressed)
-				{QuickNurse.AutoHeal = !QuickNurse.AutoHeal; Main.NewText("Auto Heal: " + QuickNurse.AutoHeal, 255, 255, 255);}
-		}
-
-		public override void PostUpdate()
-		{
-			base.PostUpdate();
-			if (QuickNurse.AutoHeal && PlayerNeedsHealing(Main.player[Main.myPlayer]))
-				NurseHeal(Main.player[Main.myPlayer]);
 		}
 	}
 
 	internal static class Hotkeys
 	{
 		public static string ToggleQuickNurse { get; set; }
-		public static string ToggleAutoHeal { get; set; }
 	}
 }
