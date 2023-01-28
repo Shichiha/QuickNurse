@@ -12,8 +12,6 @@ namespace QuickNurse
 	{
 		// i love magic numbers
 		public static List<int> dontClearIndexes = new List<int> { 28, 34, 87, 89, 21, 86, 199 };
-		public static double num9 = 100;
-
 
 		internal static ModKeybind ToggleQuickNurse;
 		public override void Load()
@@ -28,8 +26,9 @@ namespace QuickNurse
 		{
 			Vector2 playerPos = Main.player[Main.myPlayer].position;
 			foreach (NPC npc in Main.npc)
-				if (npc.type == NPCID.Nurse && npc.Distance(playerPos) < QuickNurse.num9)
-					return true;
+				if (npc.type == NPCID.Nurse)
+					if (new Rectangle((int)((double)playerPos.X + (double)(Main.player[Main.myPlayer].width / 2) - (double)(Player.tileRangeX * 16)), (int)((double)playerPos.Y + (double)(Main.player[Main.myPlayer].height / 2) - (double)(Player.tileRangeY * 16)), Player.tileRangeX * 16 * 2, Player.tileRangeY * 16 * 2).Intersects(new Rectangle((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height)))
+						return true;
 			return false;
 		}
 
@@ -51,7 +50,6 @@ namespace QuickNurse
 
 		private void NurseHeal(Player player)
 		{
-			List<string> messages = new List<string> { "No nurse nearby!", "Not enough money!", "You are already at full health!" };
 			bool needsHealing = PlayerNeedsHealing(player);
 			bool enoughMoney = player.BuyItem(NPCID.Nurse, -1);
 			bool nurseNearby = IsNurseNearby();
@@ -60,11 +58,11 @@ namespace QuickNurse
 			else
 			{
 				if (!nurseNearby)
-					Main.NewText(messages[0], 255, 0, 0);
+					Main.NewText("No nurse nearby!", 255, 0, 0);
 				else if (!enoughMoney)
-					Main.NewText(messages[1], 255, 0, 0);
+					Main.NewText("Not enough money!", 255, 0, 0);
 				else if (!needsHealing)
-					Main.NewText(messages[2], 255, 255, 255);
+					Main.NewText("You are already at full health!", 255, 255, 255);
 			}
 		}
 		private bool PlayerNeedsHealing(Player player) => player.statLife < player.statLifeMax2;
