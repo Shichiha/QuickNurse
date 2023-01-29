@@ -21,14 +21,20 @@ namespace QuickNurse
 
 	public class QuickNursePlayer : ModPlayer
 	{
+		private NPC getNurse()
+		{
+			foreach (NPC npc in Main.npc)
+				if (npc.type == NPCID.Nurse && npc.active)
+					return npc;
+			return null;
+		}
 		private bool IsNurseNearby()
 		{
-			Vector2 playerPos = Main.player[Main.myPlayer].position;
-			foreach (NPC npc in Main.npc)
-				if (npc.type == NPCID.Nurse)
-					if (new Rectangle((int)((double)playerPos.X + (double)(Main.player[Main.myPlayer].width / 2) - (double)(Player.tileRangeX * 16)), (int)((double)playerPos.Y + (double)(Main.player[Main.myPlayer].height / 2) - (double)(Player.tileRangeY * 16)), Player.tileRangeX * 16 * 2, Player.tileRangeY * 16 * 2).Intersects(new Rectangle((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height)))
-						return true;
-			return false;
+			Player myPlayer = Main.player[Main.myPlayer];
+			Vector2 playerPos = myPlayer.position;
+			NPC nurse = getNurse();
+			if (nurse == null || myPlayer.dead) return false;
+			return new Rectangle((int)((double)playerPos.X + (double)(Main.player[Main.myPlayer].width / 2) - (double)(Player.tileRangeX * 16)), (int)((double)playerPos.Y + (double)(Main.player[Main.myPlayer].height / 2) - (double)(Player.tileRangeY * 16)), Player.tileRangeX * 16 * 2, Player.tileRangeY * 16 * 2).Intersects(new Rectangle((int)nurse.position.X, (int)nurse.position.Y, nurse.width, nurse.height));
 		}
 
 		private void HealPlayer(Player player)
@@ -36,13 +42,13 @@ namespace QuickNurse
 			player.HealEffect(player.statLifeMax2 - player.statLife, true);
 			SoundEngine.PlaySound(SoundID.Item4, player.Center);
 			player.statLife = player.statLifeMax2;
-			for (int b = 0; b < Player.MaxBuffs; ++b)
+			for (int buffSlot = 0; buffSlot < Player.MaxBuffs; ++buffSlot)
 			{
-				int buffIndex = player.buffType[b];
-				if (Main.debuff[buffIndex] && player.buffTime[b] > 0 && !BuffID.Sets.NurseCannotRemoveDebuff[buffIndex])
+				int buffId = player.buffType[buffSlot];
+				if (Main.debuff[buffId] && player.buffTime[buffSlot] > 0 && !BuffID.Sets.NurseCannotRemoveDebuff[buffId])
 				{
-					player.DelBuff(b);
-					b = -1;
+					player.DelBuff(buffSlot);
+					buffSlot = -1;
 				}
 			}
 		}
@@ -51,12 +57,13 @@ namespace QuickNurse
 		{
 			Player myPlayer = Main.player[Main.myPlayer];
 			int price = myPlayer.statLifeMax2 - myPlayer.statLife;
-			for (int i = 0; i < Player.MaxBuffs; ++i)
+			for (int buffSlot = 0; buffSlot < Player.MaxBuffs; ++buffSlot)
 			{
-				int buffIndex = myPlayer.buffType[i];
-				if (Main.debuff[buffIndex] && myPlayer.buffTime[i] > 60 && !BuffID.Sets.NurseCannotRemoveDebuff[buffIndex])
+				int buffId = myPlayer.buffType[buffSlot];
+				if (Main.debuff[buffId] && myPlayer.buffTime[buffSlot] > 60 && !BuffID.Sets.NurseCannotRemoveDebuff[buffId])
 					price += 100;
 			}
+
 			if (NPC.downedGolemBoss) price *= 200;
 			else if (NPC.downedPlantBoss) price *= 150;
 			else if (NPC.downedMechBossAny) price *= 100;
@@ -74,15 +81,19 @@ namespace QuickNurse
 			bool needsHealing = PlayerNeedsHealing(player);
 			bool enoughMoney = player.BuyItem(GetPrice());
 			bool nurseNearby = IsNurseNearby();
+			int playerHPtoMax = player.statLifeMax2 - player.statLife;
 			if (nurseNearby && enoughMoney && needsHealing)
+			{
 				HealPlayer(player);
+				PostNurseHeal(getNurse(), playerHPtoMax, true, GetPrice());
+			}
 			else
 			{
-				if (!nurseNearby)
+				if (!nurseNearby && QuickNurseClientConfig.Instance.ShowInfoMessages)
 					Main.NewText("No nurse nearby!", 255, 0, 0);
-				else if (!enoughMoney)
+				else if (!enoughMoney && QuickNurseClientConfig.Instance.ShowInfoMessages)
 					Main.NewText("Not enough money!", 255, 0, 0);
-				else if (!needsHealing)
+				else if (!needsHealing && QuickNurseClientConfig.Instance.ShowInfoMessages)
 					Main.NewText("You are already at full health!", 255, 255, 255);
 			}
 		}
@@ -93,9 +104,8 @@ namespace QuickNurse
 			if (QuickNurse.QuickNurseHotkey.JustPressed)
 				NurseHeal(Main.player[Main.myPlayer]);
 			if (QuickNurse.GetPriceHotkey.JustPressed)
-			{
 				Main.NewText("Price: " + GetPrice(), 255, 255, 255);
-			}
+
 		}
 	}
 

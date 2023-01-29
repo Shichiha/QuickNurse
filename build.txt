@@ -1,3 +1,4 @@
 displayName = Nurse Heal Hotkey
 author = Shichiha
 version = 1.0
+side = Client
