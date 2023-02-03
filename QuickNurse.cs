@@ -23,10 +23,15 @@ namespace QuickNurse
 	{
 		private NPC getNurse()
 		{
+			List<NPC> nurses = new List<NPC>();
+			Player player = Main.player[Main.myPlayer];
 			foreach (NPC npc in Main.npc)
 				if (npc.type == NPCID.Nurse && npc.active)
-					return npc;
-			return null;
+					nurses.Add(npc);
+			if (nurses.Count == 0) return null;
+			nurses.Sort((a, b) => Vector2.Distance(a.Center, player.Center).CompareTo(Vector2.Distance(b.Center, player.Center)));
+			return nurses[0];
+			
 		}
 		private bool IsNurseNearby()
 		{

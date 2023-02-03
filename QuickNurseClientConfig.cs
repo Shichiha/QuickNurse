@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Terraria.ModLoader.Config;
 
 namespace QuickNurse
@@ -9,7 +10,8 @@ namespace QuickNurse
 		public static QuickNurseClientConfig Instance;
 		[Label("Show Info Messages")]
 		[Tooltip("Whether or not to show info messages (i.e. \"Nurse is not nearby\")")]
-		public bool ShowInfoMessages = true;
+		[DefaultValue(true)]
+		public bool ShowInfoMessages;
 
 	}
 
