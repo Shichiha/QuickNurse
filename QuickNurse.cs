@@ -16,11 +16,14 @@ namespace QuickNurse
 		{
 			QuickNurseHotkey = KeybindLoader.RegisterKeybind(this, "Nurse Heal", "Home");
 			GetPriceHotkey = KeybindLoader.RegisterKeybind(this, "Get Price", "End");
+			Mod Calamity = ModLoader.GetMod("CalamityMod");
 		}
 	}
 
 	public class QuickNursePlayer : ModPlayer
 	{
+		Mod Calamity = ModLoader.GetMod("CalamityMod");
+
 		private NPC getNurse()
 		{
 			List<NPC> nurses = new List<NPC>();
@@ -60,6 +63,7 @@ namespace QuickNurse
 
 		private int GetPrice()
 		{
+			
 			Player myPlayer = Main.player[Main.myPlayer];
 			int price = myPlayer.statLifeMax2 - myPlayer.statLife;
 			for (int buffSlot = 0; buffSlot < Player.MaxBuffs; ++buffSlot)
@@ -77,8 +81,50 @@ namespace QuickNurse
 			else if (NPC.downedBoss2) price *= 10;
 			else if (NPC.downedBoss1) price *= 3;
 			if (Main.expertMode) price *= 2;
-			int priceScaled = (int)((double)price * myPlayer.currentShoppingSettings.PriceAdjustment);
-			return priceScaled;
+			price = (int)((double)price * myPlayer.currentShoppingSettings.PriceAdjustment);
+			if (Calamity != null)
+			{
+				if (price > 0)
+				{
+
+					if ((bool)Calamity.Call("Downed", "yharon"))
+						price += 90000;
+					else if ((bool)Calamity.Call("Downed", "devourer of gods"))
+						price += 60000;
+					else if ((bool)Calamity.Call("Downed", "providence"))
+						price += 32000;
+					else if (NPC.downedMoonlord)
+						price += 20000;
+					else if (NPC.downedFishron || (bool)Calamity.Call("Downed", "plaguebringer") || (bool)Calamity.Call("Downed", "ravager"))
+						price += 12000;
+					else if (NPC.downedGolemBoss)
+						price += 900;
+					else if (NPC.downedPlantBoss || (bool)Calamity.Call("Downed", "calamitas clone"))
+						price += 6000;
+					else if (NPC.downedMechBossAny)
+						price += 4000;
+					else if (Main.hardMode)
+						price += 2400;
+					else if (NPC.downedBoss3)
+						price += 1200;
+					else if (NPC.downedBoss1)
+						price += 600;
+					else
+						price += 300;
+
+					for (int i = 0; i < Main.maxNPCs; i++)
+					{
+						if (Main.npc[i].active && Main.npc[i].boss)
+						{
+							price *= 5;
+							break;
+						}
+					}
+					price += 5000; // measure
+				}
+				}
+			return price;
+			
 		}
 
 		private void NurseHeal(Player player)
@@ -109,7 +155,14 @@ namespace QuickNurse
 			if (QuickNurse.QuickNurseHotkey.JustPressed)
 				NurseHeal(Main.player[Main.myPlayer]);
 			if (QuickNurse.GetPriceHotkey.JustPressed)
-				Main.NewText("Price: " + GetPrice(), 255, 255, 255);
+				{
+					int price = GetPrice();
+					int platinum = price / 1000000;
+					int gold = (price % 1000000) / 10000;
+					int silver = (price % 10000) / 100;
+					int copper = price % 100;
+					Main.NewText("Price: " + price, 255, 255, 255);
+				}
 
 		}
 	}

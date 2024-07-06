@@ -1,6 +1,9 @@
 Terraria Pay-to-win mod
 
 This mod allows players to quickly access the nurse healing feature in Terraria by assigning a hotkey. With this mod, players no longer need to manually click on the nurse NPC, saving time and streamlining gameplay. This mod is highly recommended for cowardly players who are afraid of dying! (im kidding)
-This mod may work incorrectly with other mods that change the nurse NPC. If you encounter any problems, please leave a comment in the steam workshop page.
+
+I added support for Calamity but it is untested at the moment
+
+If you encounter any problems or suggestions, please leave a comment in the steam workshop page.
 
 Github: https://github.com/Shichiha/QuickNurse/releases

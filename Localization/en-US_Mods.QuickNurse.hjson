@@ -1,0 +1,15 @@
+Keybinds: {
+	"Nurse Heal.DisplayName": Nurse  Heal
+	"Get Price.DisplayName": Get  Price
+}
+
+Configs: {
+	QuickNurseClientConfig: {
+		DisplayName: Config
+
+		ShowInfoMessages: {
+			Label: Show Info Messages
+			Tooltip: Whether or not to show info messages (i.e. "Nurse is not nearby")
+		}
+	}
+}
